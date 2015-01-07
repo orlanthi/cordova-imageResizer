@@ -125,7 +125,23 @@
     if([imageDataType isEqualToString:@"base64Image"]==YES) {
         img = [[UIImage alloc] initWithData:[NSData dataWithBase64EncodedString:imageData]];
     } else {
-        img = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:[NSURL fileURLWithPath:imageData]]];
+        NSURL *url = nil;
+        if ([imageData hasPrefix:@"/"]) {
+            url = [NSURL fileURLWithPath:imageData];
+        } else {
+            url = [NSURL URLWithString:imageData];
+        }
+        img = [[UIImage alloc] initWithData:[NSData dataWithContentsOfURL:url]];
+    }
+    if (img == nil) {
+        /*
+         * Ideally callers of this method should check for the result being nil and handle that by retuning
+         * a plugin error.
+         *
+         * This is a work-around that at least logs the image being nil and the 'data' [source] used to
+         * try and load it.
+         */
+        NSLog(@"Could not load image from imageData: '%@'", [imageData description]);
     }
     return img;
 }
